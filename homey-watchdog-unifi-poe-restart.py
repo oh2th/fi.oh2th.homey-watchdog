@@ -1,10 +1,10 @@
+import sys
+import time
+import threading
 import argparse
 import json
 import logging
 import requests
-import sys
-import time
-import threading
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
