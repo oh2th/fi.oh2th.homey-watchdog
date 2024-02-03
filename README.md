@@ -4,6 +4,12 @@ Python script to monitor a Homey Pro http port response.
 
 If the Homey Pro doesn't respond with a proper json message, restarts the Unifi switch port POE power using Unifi Network Controller API.
 
+## Prerequisities
+
+No changes need on your Homey Pro.
+
+Local account as super admin on the Unifi Controller.
+
 ## Usage
 
 ```
