@@ -8,7 +8,7 @@ If the Homey Pro doesn't respond with a proper json message, restarts the Unifi 
 
 No changes need on your Homey Pro.
 
-Local account as super admin on the Unifi Controller.
+Local account is needed as super admin on the Unifi Controller.
 
 ## Usage
 
