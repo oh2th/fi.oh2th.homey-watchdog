@@ -39,7 +39,7 @@ password = your_password
 mac = your_device_mac
 ports = 1,2,3
 state = auto
-verbose = true
+log_level = info
 test = false
 ```
 

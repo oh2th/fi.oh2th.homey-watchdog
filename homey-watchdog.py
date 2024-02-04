@@ -55,12 +55,11 @@ set_device_settings_endpoint = base_url + '/proxy/network/api/s/default/rest/dev
 ports_array = settings.get('ports').split(',')
 desired_poe_state = settings.get('state')
 
-if (settings.getboolean('verbose')):
-	loglevel=logging.DEBUG
-else:
-	loglevel=logging.INFO
+grace_period = int(settings.get('grace_period', 180))
 
-logging.basicConfig(level=loglevel, format='%(asctime)s - %(levelname)s - %(message)s')
+log_level = settings.get('log_level', 'INFO')
+
+logging.basicConfig(level=getattr(logging, log_level.upper()), format='%(asctime)s - %(levelname)s - %(message)s')
 
 s = requests.Session()
 
@@ -187,7 +186,7 @@ def monitor_target_url():
 	This function continuously sends HTTP requests to the specified URL and checks for a successful response.
 	If the response is successful, it checks for expected JSON variables in the response.
 	If any expected variable is missing or if the response is not a valid JSON, it increments the failure count.
-	If the failure count exceeds the specified try count, it performs error actions and pauses monitoring for 120 seconds.
+	If the failure count exceeds the specified try count, it performs error actions and pauses monitoring for grace period.
 	The monitoring interval between each request is also specified.
 
 	Args:
@@ -214,7 +213,7 @@ def monitor_target_url():
 							logging.warning("Expected variable '%s' not found in JSON response. Fail count: %s", var, consecutive_failures)
 							if consecutive_failures >= retry_count:
 								restart_poe_port()
-								time.sleep(120)  # Pause monitoring for 120 seconds
+								time.sleep(grace_period)  # Pause monitoring for grace period
 								consecutive_failures = 0  # Reset consecutive failures counter
 							break
 
@@ -225,14 +224,14 @@ def monitor_target_url():
 					logging.warning("Monitoring URL response is not a valid JSON. Fail count: %s", consecutive_failures)
 					if consecutive_failures >= retry_count:
 						restart_poe_port()
-						time.sleep(120)  # Pause monitoring for 120 seconds
+						time.sleep(grace_period)  # Pause monitoring for grace period
 						consecutive_failures = 0  # Reset consecutive failures counter
 			else:
 				consecutive_failures += 1
 				logging.warning("Monitoring URL failed with status code %s. Fail count: %s", response.status_code, consecutive_failures)
 				if consecutive_failures >= retry_count:
 					restart_poe_port()
-					time.sleep(120)  # Pause monitoring for 120 seconds
+					time.sleep(grace_period)  # Pause monitoring for grace period
 					consecutive_failures = 0  # Reset consecutive failures counter
 
 		except Exception as e:
@@ -240,7 +239,7 @@ def monitor_target_url():
 			logging.warning("Error while monitoring URL: %s. Fail count: %s", str(e), consecutive_failures)
 			if consecutive_failures >= retry_count:
 				restart_poe_port()
-				time.sleep(120)  # Pause monitoring for 120 seconds
+				time.sleep(grace_period)  # Pause monitoring for grace period
 				consecutive_failures = 0  # Reset consecutive failures counter
 
 		time.sleep(monitor_interval)
@@ -248,7 +247,7 @@ def monitor_target_url():
 def restart_poe_port():
 	"""
 	Perform actions when the URL is not successful, including logging in, setting port states,
-	waiting for 5 seconds, setting port states again, and logging out.
+	waiting for 10 seconds, setting port states again, and logging out.
 
 	Args:
 		None
@@ -259,7 +258,7 @@ def restart_poe_port():
 	try:
 		csrf_token = login()
 		set_port_state(csrf_token, ports_array, 'off')
-		time.sleep(5)
+		time.sleep(10)
 		set_port_state(csrf_token, ports_array, desired_poe_state)
 		logout(csrf_token)
 	except Exception as e:
