@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import time
 import threading
@@ -8,7 +10,7 @@ import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-parser = argparse.ArgumentParser(description='Change the PoE Mode of Unifi switches controlled by a Unifi Network Controller.')
+parser = argparse.ArgumentParser(description='Monitor a target and reset PoE port modes on a Unifi switch.')
 parser.add_argument("-m", "--monitor_url", help="Optional: URL to monitor for success, use with --monitor_json_vars")
 parser.add_argument("-j", "--monitor_json_vars", help="Optional: Comma-separated list of expected variables in JSON response")
 parser.add_argument("-i", "--monitor_interval", type=int, default=60, help="Optional: Interval in seconds to monitor the URL (default: 60)")

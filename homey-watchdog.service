@@ -1,0 +1,13 @@
+[Unit]
+Description=Monitor a target and reset PoE port modes on a Unifi switch.
+After=network.target
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+ExecStart=/usr/local/bin/homey-watchdog.py -m http://homey2.oh2th.fi/ -j homeyId,homeyVersion -c unifi.oh2th.fi -u homey -p Gcy:LvP9dvKS-2oCt25D --mac e4:38:83:47:ee:b0 --ports 8 --state auto
+
+[Install]
+WantedBy=default.target
