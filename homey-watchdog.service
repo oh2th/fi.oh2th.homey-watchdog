@@ -7,7 +7,7 @@ StartLimitIntervalSec=60
 Type=simple
 Restart=always
 RestartSec=60
-ExecStart=/usr/local/bin/homey-watchdog.py -m http://homey2.oh2th.fi/ -j homeyId,homeyVersion -c unifi.oh2th.fi -u homey -p Gcy:LvP9dvKS-2oCt25D --mac e4:38:83:47:ee:b0 --ports 8 --state auto
+ExecStart=/usr/local/bin/homey-watchdog.py -c /usr/local/etc/homey-watchdog.conf
 
 [Install]
 WantedBy=default.target

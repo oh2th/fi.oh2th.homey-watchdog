@@ -7,8 +7,26 @@ import argparse
 import json
 import logging
 import requests
+from configparser import ConfigParser
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Function to read configuration from a file
+def read_config(filename):
+    config = ConfigParser()
+    config.read(filename)
+    return config
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Monitor a target and reset PoE port modes on a Unifi switch.')
+parser.add_argument("-c", "--config", help="Configuration file name", default='config.ini')
+args = parser.parse_args()
+
+# Read configuration from a file
+config = read_config(args.config)
+
+# Extract configuration options
+args = config['Settings']
 
 parser = argparse.ArgumentParser(description='Monitor a target and reset PoE port modes on a Unifi switch.')
 parser.add_argument("-m", "--monitor_url", help="Optional: URL to monitor for success, use with --monitor_json_vars")

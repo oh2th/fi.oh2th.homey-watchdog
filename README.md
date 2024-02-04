@@ -12,36 +12,46 @@ Local account is needed as super admin on the Unifi Controller.
 
 ## Usage
 
-```
-usage: poe_switch.py [-h] [-u MONITOR_URL] [-i MONITOR_INTERVAL] [-j MONITOR_JSON_VARS] [-c TRY_COUNT] [-v] [-t] controller username password mac ports state
+```text
+usage: poe_switch.py [-c CONFIG]
 
 Change the PoE Mode of UniFi switches controlled by Unifi Network Controller.
 
-positional arguments:
-  controller            hostname or IP address of UniFi Controller
-  username              username with admin rights on UniFi Controller
-  password              corresponding password for admin user
-  mac                   MAC address (with or without colons) of switch
-  ports                 comma-separated list if port numbers to set new state
-  state                 desired state of PoE ports, e.g., 'auto' or 'off'
-
 options:
   -h, --help            show this help message and exit
-  -u MONITOR_URL, --monitor_url MONITOR_URL
-                        URL to monitor for success, use with --monitor_json_vars
-  -j MONITOR_JSON_VARS, --monitor_json_vars MONITOR_JSON_VARS
-                        comma-separated list of expected variables in JSON response
-  -i MONITOR_INTERVAL, --monitor_interval MONITOR_INTERVAL
-                        Interval in seconds to monitor the URL (default: 60)
-  -c TRY_COUNT, --try_count TRY_COUNT
-                        Number of consecutive failures before triggering error actions (default: 3)
-  -v, --verbose         increase output verbosity
-  -t, --test            enable test mode (do not perform error actions)
+  -c CONFIG, --config CONFIG
+                        Use CONFIG file for the configuration
 ```
 
-`python3 poe_switch.py udm.example.org IamAdmin P4ssword fcec12345678 6,7 auto` will turn on the PoE (in mode `auto`) for ports 6 and 7 of the UniFi PoE switch with MAC address fc:ec:12:34:56:78.
+## Configuration and installation
 
-`python3 poe_switch.py -u http://homey.example.org/ -j homeyId,homeyVersion udm.example.org IamAdmin P4ssword fcec12345678 6,7 auto` will poll target homey.example for a json message to containd both homeyId and homeyVersion variables. If for any reason the request fails, it will connect to the Unifi Controller at udm.example.org and tell it first to turn OFF the ports and then back to requested state on Unifi PoE switch with MAC address.
+Copy sample/homey-watchdog.conf to the source directory and edit it for your enironment
+
+```text
+[Settings]
+monitor_url = https://example.com
+monitor_json_vars = var1,var2,var3
+monitor_interval = 60
+retry_count = 3
+controller = your_controller_address
+username = your_username
+password = your_password
+mac = your_device_mac
+ports = 1,2,3
+state = auto
+verbose = true
+test = false
+```
+
+After editing run `make install` to install the script and configuration to /usr/local/(bin|etc) and the systemd service unit file to /etc/systemd/system/.
+
+Now you can enable, start and stop the servive:
+
+```text
+systemctl enable homey-watchdog.service
+systemctl start homey-watchdog.service
+systemctl stop homey-watchdog.service
+```
 
 ## Tested on
 
