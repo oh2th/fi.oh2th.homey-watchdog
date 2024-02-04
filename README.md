@@ -43,7 +43,7 @@ verbose = true
 test = false
 ```
 
-After editing run `make install` to install the script and configuration to `/usr/local/(bin|etc)` and the systemd service unit file to `/etc/systemd/system/`.
+After editing, run `make install` to install the script and configuration to `/usr/local/(bin|etc)` and the systemd service unit file to `/etc/systemd/system/`.
 
 Now you can enable, start and stop the servive:
 
