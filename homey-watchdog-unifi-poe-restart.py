@@ -8,19 +8,19 @@ import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-parser = argparse.ArgumentParser(description='Change the PoE Mode of UniFi switches controlled by a Unifi Network Controller.')
-parser.add_argument("controller", help="hostname or IP address of UniFi Controller")
-parser.add_argument("username", help="username with admin rights on UniFi Controller")
-parser.add_argument("password", help="corresponding password for admin user")
-parser.add_argument("mac", help="MAC address (with or without colons) of switch")
-parser.add_argument("ports", help="comma-separated list if port numbers to set new state")
-parser.add_argument("state", help="desired state of PoE ports, e.g., 'auto' or 'off'")
-parser.add_argument("-u", "--monitor_url", help="URL to monitor for success, use with --monitor_json_vars")
-parser.add_argument("-j", "--monitor_json_vars", help="comma-separated list of expected variables in JSON response")
-parser.add_argument("-i", "--monitor_interval", type=int, default=60, help="Interval in seconds to monitor the URL (default: 60)")
-parser.add_argument("-c", "--try_count", type=int, default=3, help="Number of consecutive failures before triggering error actions (default: 3)")
-parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-parser.add_argument("-t", "--test", help="enable test mode (do not perform error actions)", action="store_true")
+parser = argparse.ArgumentParser(description='Change the PoE Mode of Unifi switches controlled by a Unifi Network Controller.')
+parser.add_argument("-m", "--monitor_url", help="Optional: URL to monitor for success, use with --monitor_json_vars")
+parser.add_argument("-j", "--monitor_json_vars", help="Optional: Comma-separated list of expected variables in JSON response")
+parser.add_argument("-i", "--monitor_interval", type=int, default=60, help="Optional: Interval in seconds to monitor the URL (default: 60)")
+parser.add_argument("-r", "--retry_count", type=int, default=3, help="Optional: Number of failures before triggering PoE restart (default: 3)")
+parser.add_argument("-c", "--controller", help="Hostname or IP address of the Unifi Controller")
+parser.add_argument("-u", "--username", help="Local username with admin rights on the Unifi Controller")
+parser.add_argument("-p", "--password", help="Password for user")
+parser.add_argument("--mac", help="MAC address (with or without colons) of switch")
+parser.add_argument("--ports", help="Comma-separated list of port numbers to set new state")
+parser.add_argument("--state", help="Desired state of PoE ports, e.g., 'auto' or 'off'")
+parser.add_argument("-v", "--verbose", help="Output more information", action="store_true")
+parser.add_argument("-t", "--test", help="Enable test mode - do not restart PoE ports)", action="store_true")
 args=parser.parse_args()
 
 # Check if either of --monitor_url or --monitor_json_vars is provided, then both must be used
@@ -205,7 +205,7 @@ def monitor_url():
                             if var not in json_data:
                                 logging.warning("Expected variable '%s' not found in JSON response. Fail count: %s", var, consecutive_failures)
                                 consecutive_failures += 1
-                                if consecutive_failures >= args.try_count:
+                                if consecutive_failures >= args.retry_count:
                                     restart_poe_port()
                                     time.sleep(120)  # Pause monitoring for 120 seconds
                                     consecutive_failures = 0  # Reset consecutive failures counter
@@ -216,14 +216,14 @@ def monitor_url():
                 except json.JSONDecodeError:
                     consecutive_failures += 1
                     logging.warning("Monitoring URL response is not a valid JSON. Fail count: %s", consecutive_failures)
-                    if consecutive_failures >= args.try_count:
+                    if consecutive_failures >= args.retry_count:
                         restart_poe_port()
                         time.sleep(120)  # Pause monitoring for 120 seconds
                         consecutive_failures = 0  # Reset consecutive failures counter
             else:
                 consecutive_failures += 1
                 logging.warning("Monitoring URL failed with status code %s. Fail count: %s", response.status_code, consecutive_failures)
-                if consecutive_failures >= args.try_count:
+                if consecutive_failures >= args.retry_count:
                     restart_poe_port()
                     time.sleep(120)  # Pause monitoring for 120 seconds
                     consecutive_failures = 0  # Reset consecutive failures counter
@@ -231,7 +231,7 @@ def monitor_url():
         except Exception as e:
             consecutive_failures += 1
             logging.warning("Error while monitoring URL: %s. Fail count: %s", str(e), consecutive_failures)
-            if consecutive_failures >= args.try_count:
+            if consecutive_failures >= args.retry_count:
                 restart_poe_port()
                 time.sleep(120)  # Pause monitoring for 120 seconds
                 consecutive_failures = 0  # Reset consecutive failures counter
