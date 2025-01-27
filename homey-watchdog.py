@@ -247,7 +247,7 @@ def monitor_target_url():
 def restart_poe_port():
 	"""
 	Perform actions when the URL is not successful, including logging in, setting port states,
-	waiting for 10 seconds, setting port states again, and logging out.
+	waiting for 30 seconds, setting port states again, and logging out.
 
 	Args:
 		None
@@ -258,7 +258,7 @@ def restart_poe_port():
 	try:
 		csrf_token = login()
 		set_port_state(csrf_token, ports_array, 'off')
-		time.sleep(10)
+		time.sleep(30)
 		set_port_state(csrf_token, ports_array, desired_poe_state)
 		logout(csrf_token)
 	except Exception as e:
